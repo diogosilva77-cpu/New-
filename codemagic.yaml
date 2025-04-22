@@ -1,0 +1,19 @@
+
+workflows:
+  ios-app:
+    name: Rentavel iOS Build
+    environment:
+      vars:
+        XCODE_WORKSPACE: ""
+        XCODE_SCHEME: RentavelApp
+      xcode: latest
+    scripts:
+      - name: Instalar dependências
+        script: |
+          echo "Nenhuma dependência externa"
+      - name: Compilar app
+        script: |
+          xcodebuild -project Rentavel.xcodeproj                      -scheme RentavelApp                      -sdk iphoneos                      -configuration Release                      CODE_SIGN_IDENTITY=""                      CODE_SIGNING_REQUIRED=NO
+    artifacts:
+      - build/Release-iphoneos/*.app
+      - build/Release-iphoneos/*.ipa
