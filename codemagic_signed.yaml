@@ -1,0 +1,32 @@
+
+workflows:
+  ios-app-signed:
+    name: Rentavel iOS Signed Build
+    environment:
+      vars:
+        CERTIFICATE_PASSWORD: Encrypted certificate password here
+      secure:
+        certificate: Encrypted .p12 here
+        provisioning_profile: Encrypted .mobileprovision here
+      xcode: latest
+    scripts:
+      - name: Configurar assinatura
+        script: |
+          echo $CERTIFICATE_PASSWORD | base64 --decode > certificate.p12
+          echo $provisioning_profile | base64 --decode > profile.mobileprovision
+
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P $CERTIFICATE_PASSWORD -T /usr/bin/codesign
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: Compilar e assinar a app
+        script: |
+          xcodebuild -project Rentavel.xcodeproj                      -scheme RentavelApp                      -sdk iphoneos                      -configuration Release                      -allowProvisioningUpdates                      CODE_SIGN_STYLE=Manual                      CODE_SIGN_IDENTITY="Apple Distribution"                      PROVISIONING_PROFILE_SPECIFIER="match AdHoc com.teuusuario.rentavel"
+
+    artifacts:
+      - build/Release-iphoneos/*.ipa
+      - build/Release-iphoneos/*.app
